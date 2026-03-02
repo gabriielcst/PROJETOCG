@@ -73,7 +73,7 @@ static bool canMoveTo(float nx, float nz)
 
 // Controle do portal
 static bool portalUsed = false;
-static int currentMap = 1; // começa no mapa 1
+static int currentMap = 1;
 
 static void checkPortal(float px, float pz)
 {
@@ -90,7 +90,6 @@ static void checkPortal(float px, float pz)
 
     char c = data[tz][tx];
 
-    // DEBUG: mostra qual tile o jogador está pisando
     static char lastC = 0;
     if (c != lastC) {
         std::printf("DEBUG tile: '%c' (tx=%d, tz=%d)\n", c, tx, tz);
@@ -110,8 +109,11 @@ static void checkPortal(float px, float pz)
                 gameInitLevel("maps/map2.txt");
             else if (currentMap == 3)
                 gameInitLevel("maps/map3.txt");
-            else
-                std::printf("DEBUG: Nao ha mais mapas!\n");
+            else if (currentMap > 3)
+            {
+                std::printf("DEBUG: VITORIA!\n");
+                gameSetState(GameState::VITORIA);
+            }
         }
     }
     else

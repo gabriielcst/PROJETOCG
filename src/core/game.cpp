@@ -1,4 +1,3 @@
-// #include <GL/glut.h>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -39,19 +38,14 @@ static GameContext g;
 
 constexpr int MAX_MAGAZINE = 12;
 
-// --- Assets / Level ---
 static GameAssets gAssets;
 Level gLevel;
 static AudioSystem gAudioSys;
 
 GameContext &gameContext() { return g; }
-
-AudioSystem &gameAudio() { return gAudioSys; }
-
-Level &gameLevel() { return gLevel; }
-
-GameState gameGetState() { return g.state; }
-
+AudioSystem &gameAudio()   { return gAudioSys; }
+Level &gameLevel()         { return gLevel; }
+GameState gameGetState()   { return g.state; }
 void gameSetState(GameState s) { g.state = s; }
 
 void gameTogglePause()
@@ -76,41 +70,37 @@ bool gameInit(const char *mapPath)
     if (!loadAssets(gAssets))
         return false;
 
-    g.r.texChao = gAssets.texChao;
-    g.r.texParede = gAssets.texParede;
-    g.r.texSangue = gAssets.texSangue;
-    g.r.texLava = gAssets.texLava;
-    g.r.texChaoInterno = gAssets.texChaoInterno;
-    g.r.texParedeInterna = gAssets.texParedeInterna;
-    g.r.texTeto = gAssets.texTeto;
+    g.r.texChao         = gAssets.texChao;
+    g.r.texParede       = gAssets.texParede;
+    g.r.texSangue       = gAssets.texSangue;
+    g.r.texLava         = gAssets.texLava;
+    g.r.texChaoInterno  = gAssets.texChaoInterno;
+    g.r.texParedeInterna= gAssets.texParedeInterna;
+    g.r.texTeto         = gAssets.texTeto;
+    g.r.texSkydome      = gAssets.texSkydome;
+    g.r.texMenuBG       = gAssets.texMenuBG;
 
-    g.r.texSkydome = gAssets.texSkydome;
-    g.r.texMenuBG = gAssets.texMenuBG;
-
-    gHudTex.texHudFundo = gAssets.texHudFundo;
-    gHudTex.texGunHUD = gAssets.texGunHUD;
-
+    gHudTex.texHudFundo   = gAssets.texHudFundo;
+    gHudTex.texGunHUD     = gAssets.texGunHUD;
     gHudTex.texGunDefault = gAssets.texGunDefault;
-    gHudTex.texGunFire1 = gAssets.texGunFire1;
-    gHudTex.texGunFire2 = gAssets.texGunFire2;
+    gHudTex.texGunFire1   = gAssets.texGunFire1;
+    gHudTex.texGunFire2   = gAssets.texGunFire2;
     gHudTex.texGunReload1 = gAssets.texGunReload1;
     gHudTex.texGunReload2 = gAssets.texGunReload2;
-
-    gHudTex.texDamage = gAssets.texDamage;
+    gHudTex.texDamage     = gAssets.texDamage;
     gHudTex.texHealthOverlay = gAssets.texHealthOverlay;
 
     for (int i = 0; i < 5; i++)
     {
-        g.r.texEnemies[i] = gAssets.texEnemies[i];
-        g.r.texEnemiesRage[i] = gAssets.texEnemiesRage[i];
+        g.r.texEnemies[i]       = gAssets.texEnemies[i];
+        g.r.texEnemiesRage[i]   = gAssets.texEnemiesRage[i];
         g.r.texEnemiesDamage[i] = gAssets.texEnemiesDamage[i];
     }
 
-    g.r.texHealth = gAssets.texHealth;
-    g.r.texAmmo = gAssets.texAmmo;
-
+    g.r.texHealth  = gAssets.texHealth;
+    g.r.texAmmo    = gAssets.texAmmo;
     g.r.progSangue = gAssets.progSangue;
-    g.r.progLava = gAssets.progLava;
+    g.r.progLava   = gAssets.progLava;
 
     if (!loadLevel(gLevel, mapPath, GameConfig::TILE_SIZE))
         return false;
@@ -123,11 +113,10 @@ bool gameInit(const char *mapPath)
     glutPassiveMotionFunc(mouseMotion);
     glutSetCursor(GLUT_CURSOR_NONE);
 
-    // Audio init + ambient + enemy sources
     audioInit(gAudioSys, gLevel);
 
-    g.state = GameState::MENU_INICIAL;
-    g.time = 0.0f;
+    g.state  = GameState::MENU_INICIAL;
+    g.time   = 0.0f;
     g.player = PlayerState{};
     g.weapon = WeaponAnim{};
 
@@ -137,35 +126,26 @@ bool gameInit(const char *mapPath)
 // --- TROCA DE NÍVEL (PORTAL) ---
 void gameInitLevel(const char *mapPath)
 {
-    // Limpa entidades do nível anterior
     gLevel.enemies.clear();
     gLevel.items.clear();
 
-    // Carrega o novo mapa
     if (!loadLevel(gLevel, mapPath, GameConfig::TILE_SIZE))
     {
         std::printf("ERRO: nao foi possivel carregar o mapa: %s\n", mapPath);
         return;
     }
 
-    // Reinicia o áudio para o novo nível
     audioInit(gAudioSys, gLevel);
-
-    // Reposiciona o jogador no spawn do novo mapa
     applySpawn(gLevel, camX, camZ);
     camY = GameConfig::PLAYER_EYE_Y;
-
-    // Mantém vida/ammo do jogador (ele "atravessou" o portal)
-    // Se quiser resetar, basta chamar gameReset() aqui também
 }
 
-// Reinicia o jogo
+// --- RESET ---
 void gameReset()
 {
-    g.player.health = 100;
+    g.player.health      = 100;
     g.player.currentAmmo = 12;
     g.player.reserveAmmo = 25;
-
     g.player.damageAlpha = 0.0f;
     g.player.healthAlpha = 0.0f;
 
@@ -175,6 +155,7 @@ void gameReset()
     applySpawn(gLevel, camX, camZ);
 }
 
+// --- UPDATE ---
 void gameUpdate(float dt)
 {
     g.time += dt;
@@ -187,11 +168,11 @@ void gameUpdate(float dt)
     AudioListener L;
     L.pos = {camX, camY, camZ};
     {
-        float ry = yaw * 3.14159f / 180.0f;
+        float ry = yaw   * 3.14159f / 180.0f;
         float rp = pitch * 3.14159f / 180.0f;
         L.forward = {cosf(rp) * sinf(ry), sinf(rp), -cosf(rp) * cosf(ry)};
     }
-    L.up = {0.0f, 1.0f, 0.0f};
+    L.up  = {0.0f, 1.0f, 0.0f};
     L.vel = {0.0f, 0.0f, 0.0f};
 
     bool moving = (keyW || keyA || keyS || keyD);
@@ -200,14 +181,12 @@ void gameUpdate(float dt)
     if (g.player.damageAlpha > 0.0f)
     {
         g.player.damageAlpha -= dt * 0.5f;
-        if (g.player.damageAlpha < 0.0f)
-            g.player.damageAlpha = 0.0f;
+        if (g.player.damageAlpha < 0.0f) g.player.damageAlpha = 0.0f;
     }
     if (g.player.healthAlpha > 0.0f)
     {
         g.player.healthAlpha -= dt * 0.9f;
-        if (g.player.healthAlpha < 0.0f)
-            g.player.healthAlpha = 0.0f;
+        if (g.player.healthAlpha < 0.0f) g.player.healthAlpha = 0.0f;
     }
 
     updateEntities(dt);
@@ -220,7 +199,7 @@ void gameUpdate(float dt)
     }
 }
 
-// Função auxiliar para desenhar o mundo 3D
+// --- DRAW ---
 void drawWorld3D()
 {
     glMatrixMode(GL_MODELVIEW);
@@ -263,6 +242,11 @@ void gameRender()
     {
         drawWorld3D();
         menuRender(janelaW, janelaH, g.time, "GAME OVER", "Pressione ENTER para Reiniciar", g.r);
+    }
+    else if (g.state == GameState::VITORIA)
+    {
+        drawWorld3D();
+        menuRender(janelaW, janelaH, g.time, "VOCE VENCEU!", "Pressione ENTER para o Menu", g.r);
     }
     else if (g.state == GameState::PAUSADO)
     {

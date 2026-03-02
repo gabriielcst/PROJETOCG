@@ -5,7 +5,8 @@ enum class GameState
     MENU_INICIAL,
     JOGANDO,
     PAUSADO,
-    GAME_OVER
+    GAME_OVER,
+    VITORIA  // <- novo
 };
 
 enum class WeaponState
